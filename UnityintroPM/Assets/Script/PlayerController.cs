@@ -26,6 +26,13 @@ public class PlayerController : MonoBehaviour
     public float Ysensitivity = 2.0f;
     public float camRotationLimit = 90f;
 
+    [Header("Weapon Stats")]
+    public bool canfire = false;
+
+    [Header("Player Stats")]
+    public int currenthealth = 5;
+    public int maxhealth = 5;
+    public int healthrestore = 1;
     // Start is called before the first frame update
     void Start()
     {
@@ -85,7 +92,7 @@ public class PlayerController : MonoBehaviour
         if (dashMode)
             temp.x = verticalMove * speed * dashmult;
 
-        if (dashMode)
+        if (Input.GetKeyUp(KeyCode.Mouse2) && dashMode)
             dashMode = false;
 
         if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, -2*transform.up, groundDetectDistance))
@@ -93,4 +100,31 @@ public class PlayerController : MonoBehaviour
 
         myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
     }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if ((currenthealth < maxhealth) && collision.gameObject.tag == "Healthpickup")
+        { 
+            currenthealth += healthrestore;
+
+            if (currenthealth > maxhealth)
+                currenthealth = maxhealth;
+
+            Destroy(collision.gameObject);
+        
+        }
+        
+        
+    }
+    
+    IEnumerator cooldown(float time)
+    {
+        yield return new WaitForSeconds(time);
+        canfire = true;
+    }
+
+    if (collision.gameObject.tag == "Weapon")
+        {
+            gameObject.transform.SetParent(weaponSlot);
+        }
 }
