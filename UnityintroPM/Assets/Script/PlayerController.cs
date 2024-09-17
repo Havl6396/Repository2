@@ -9,13 +9,27 @@ public class PlayerController : MonoBehaviour
 
     Vector2 camRotation;
 
-    public bool sprintMode = false;
-    public bool dashMode = false;
+    public Transform Weaponslot;
+
+    [Header("Player Stats")]
+    public int maxHealth = 5;
+    public int health = 5;
+    public int healthRestore = 1;
+
+    [Header("Weapon Stats")]
+    public int weaponID = 0;
+    public float fireRate = 0.25f;
+    public float Currentclip = 20;
+    public float Clipsize = 20;
+    public float maxAmmo = 400;
+    public float currentAmmo = 200;
+    public float reloadamount = 20;
+    public bool canFire = true;
 
     [Header("Movement Settings")]
     public float speed = 10.0f;
-    public float dashmult = 10.0f;
     public float sprintMultiplier = 2.5f;
+    public bool sprintMode = false;
     public float jumpHeight = 5.0f;
     public float groundDetectDistance = 1f;
 
@@ -26,13 +40,7 @@ public class PlayerController : MonoBehaviour
     public float Ysensitivity = 2.0f;
     public float camRotationLimit = 90f;
 
-    [Header("Weapon Stats")]
-    public bool canfire = false;
-
-    [Header("Player Stats")]
-    public int currenthealth = 5;
-    public int maxhealth = 5;
-    public int healthrestore = 1;
+   
     // Start is called before the first frame update
     void Start()
     {
@@ -54,6 +62,12 @@ public class PlayerController : MonoBehaviour
 
         playerCam.transform.localRotation = Quaternion.AngleAxis(camRotation.y, Vector3.left);
         transform.localRotation = Quaternion.AngleAxis(camRotation.x, Vector3.up);
+
+        if(Input.GetKey(KeyCode.Mouse0) && canFire)
+        {
+            canFire = false;
+            StartCoroutine("cooldownFire");
+        }
 
         Vector3 temp = myRB.velocity;
 
@@ -86,45 +100,95 @@ public class PlayerController : MonoBehaviour
 
         temp.z = horizontalMove * speed;
 
-        if (Input.GetKeyDown(KeyCode.Mouse2) && !dashMode)
-            dashMode = true;
 
-        if (dashMode)
-            temp.x = verticalMove * speed * dashmult;
-
-        if (Input.GetKeyUp(KeyCode.Mouse2) && dashMode)
-            dashMode = false;
-
-        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, -2*transform.up, groundDetectDistance))
+        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
             temp.y = jumpHeight;
 
         myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Weapon")
+        {
+            other.gameObject.transform.SetParent(Weaponslot);
+            other.gameObject.transform.position = Weaponslot.position;
+            other.gameObject.transform.rotation = Weaponslot.rotation;
+
+            switch(other.gameObject.name)
+            {
+                case "Weapon1":
+                    weaponID = 0;
+                    fireRate = 0;
+                    Currentclip = 0;
+                    Clipsize = 0;
+                    maxAmmo = 0;
+                    currentAmmo = 0;
+                    reloadamount = 0;
+                    break;
+                
+                default:
+                    break;
+
+    
+            }   
+        }
+    }
+
     private void OnCollisionEnter(Collision collision)
     {
-        if ((currenthealth < maxhealth) && collision.gameObject.tag == "Healthpickup")
-        { 
-            currenthealth += healthrestore;
+        if ((health < maxHealth) && collision.gameObject.tag == "Healthpickup")
+        {
+            health += healthRestore;
 
-            if (currenthealth > maxhealth)
-                currenthealth = maxhealth;
+            if (health > maxHealth)
+                health = maxHealth;
 
             Destroy(collision.gameObject);
-        
         }
-        
-        
-    }
-    
-    IEnumerator cooldown(float time)
-    {
-        yield return new WaitForSeconds(time);
-        canfire = true;
+
+        if ((currentAmmo < maxAmmo) && collision.gameObject.tag == "Ammopickup")
+        {
+            currentAmmo += reloadamount;
+
+            if (currentAmmo > maxAmmo)
+                currentAmmo = maxAmmo;
+
+            Destroy(collision.gameObject);
+        }
     }
 
-    if (collision.gameObject.tag == "Weapon")
+    public void Reloadclip()
+    {
+        if (Currentclip == Clipsize)
+            return;
+
+        else
         {
-            gameObject.transform.SetParent(weaponSlot);
+            float reloadCount = Clipsize = Currentclip;
+
+            if (currentAmmo < reloadamount)
+            {
+                Currentclip += currentAmmo; 
+                    
+                currentAmmo = 0;
+
+                return;
+            }
+
+            else
+            {
+                Currentclip += reloadamount;
+
+                currentAmmo -= reloadamount;
+
+                return;
+            }
         }
+    }
+    IEnumerator cooldownFire(float time)
+    {
+        yield return new WaitForSeconds(fireRate);
+        canFire = true;
+    }
 }
