@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour
 
     Vector2 camRotation;
 
-    public Transform Weaponslot;
+    public Transform weaponSlot;
 
     [Header("Player Stats")]
     public int maxHealth = 5;
@@ -17,13 +17,17 @@ public class PlayerController : MonoBehaviour
     public int healthRestore = 1;
 
     [Header("Weapon Stats")]
-    public int weaponID = 0;
-    public float fireRate = 0.25f;
-    public float Currentclip = 20;
-    public float Clipsize = 20;
-    public float maxAmmo = 400;
-    public float currentAmmo = 200;
-    public float reloadamount = 20;
+    public GameObject shot;
+    public float shotVel = 0;
+    public int weaponID = -1;
+    public int fireMode = 0;
+    public float fireRate = 0;
+    public float currentClip = 0;
+    public float clipSize = 0;
+    public float maxAmmo = 0;
+    public float currentAmmo = 0;
+    public float reloadAmt = 0;
+    public float bulletLifespan = 0;
     public bool canFire = true;
 
     [Header("Movement Settings")]
@@ -32,6 +36,12 @@ public class PlayerController : MonoBehaviour
     public bool sprintMode = false;
     public float jumpHeight = 5.0f;
     public float groundDetectDistance = 1f;
+    public float dashcooldown = .0001f;
+    public float dashspeed = 10.0f;
+    public bool dashMode = false;
+    public bool candash = true;
+    public float currentStam = 3;
+    public float maxStam = 3;
 
     [Header("User Settings")]
     public bool sprintToggleOption = false;
@@ -40,7 +50,6 @@ public class PlayerController : MonoBehaviour
     public float Ysensitivity = 2.0f;
     public float camRotationLimit = 90f;
 
-   
     // Start is called before the first frame update
     void Start()
     {
@@ -63,10 +72,24 @@ public class PlayerController : MonoBehaviour
         playerCam.transform.localRotation = Quaternion.AngleAxis(camRotation.y, Vector3.left);
         transform.localRotation = Quaternion.AngleAxis(camRotation.x, Vector3.up);
 
-        if(Input.GetKey(KeyCode.Mouse0) && canFire)
+        if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID >= 0)
         {
+            GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
+            s.GetComponent<Rigidbody>().AddForce(playerCam.transform.forward * shotVel);
+            Destroy(s, bulletLifespan);
+
             canFire = false;
+            currentClip--;
             StartCoroutine("cooldownFire");
+        }
+
+        if (Input.GetKeyDown(KeyCode.R))
+            reloadClip();
+
+        if (Input.GetKeyDown(KeyCode.Mouse2) && candash)
+        {
+            dashMode = true;
+            StartCoroutine("cooldowndash");
         }
 
         Vector3 temp = myRB.velocity;
@@ -92,14 +115,22 @@ public class PlayerController : MonoBehaviour
                 sprintMode = false;
         }
 
-        if (!sprintMode)
-            temp.x = verticalMove * speed;
-
-        if (sprintMode)
-            temp.x = verticalMove * speed * sprintMultiplier;
-
+        temp.x = verticalMove * speed;
         temp.z = horizontalMove * speed;
 
+        if (sprintMode)
+            temp.x *= sprintMultiplier;
+
+        if (dashMode)
+        {
+            temp.x *= dashspeed;
+            currentStam--;
+        }
+
+        if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
+        {
+            currentStam = maxStam;
+        }
 
         if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
             temp.y = jumpHeight;
@@ -111,27 +142,29 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.tag == "Weapon")
         {
-            other.gameObject.transform.SetParent(Weaponslot);
-            other.gameObject.transform.position = Weaponslot.position;
-            other.gameObject.transform.rotation = Weaponslot.rotation;
+            other.gameObject.transform.SetPositionAndRotation(weaponSlot.position, weaponSlot.rotation);
 
-            switch(other.gameObject.name)
+            other.gameObject.transform.SetParent(weaponSlot);
+
+            switch (other.gameObject.name)
             {
                 case "Weapon1":
+
                     weaponID = 0;
-                    fireRate = 0;
-                    Currentclip = 0;
-                    Clipsize = 0;
-                    maxAmmo = 0;
-                    currentAmmo = 0;
-                    reloadamount = 0;
-                    break;
-                
-                default:
+                    shotVel = 10000;
+                    fireMode = 0;
+                    fireRate = 0.25f;
+                    currentClip = 20;
+                    clipSize = 20;
+                    maxAmmo = 400;
+                    currentAmmo = 200;
+                    reloadAmt = 20;
+                    bulletLifespan = 1;
                     break;
 
-    
-            }   
+                default:
+                    break;
+            }
         }
     }
 
@@ -149,7 +182,7 @@ public class PlayerController : MonoBehaviour
 
         if ((currentAmmo < maxAmmo) && collision.gameObject.tag == "Ammopickup")
         {
-            currentAmmo += reloadamount;
+            currentAmmo += reloadAmt;
 
             if (currentAmmo > maxAmmo)
                 currentAmmo = maxAmmo;
@@ -158,37 +191,41 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    public void Reloadclip()
+    public void reloadClip()
     {
-        if (Currentclip == Clipsize)
+        if (currentClip >= clipSize)
             return;
 
         else
         {
-            float reloadCount = Clipsize = Currentclip;
+            float reloadCount = clipSize - currentClip;
 
-            if (currentAmmo < reloadamount)
+            if (currentAmmo < reloadCount)
             {
-                Currentclip += currentAmmo; 
-                    
+                currentClip += currentAmmo;
                 currentAmmo = 0;
-
                 return;
             }
 
             else
             {
-                Currentclip += reloadamount;
-
-                currentAmmo -= reloadamount;
-
+                currentClip += reloadCount;
+                currentAmmo -= reloadCount;
                 return;
             }
         }
     }
-    IEnumerator cooldownFire(float time)
+
+    IEnumerator cooldownFire()
     {
         yield return new WaitForSeconds(fireRate);
         canFire = true;
+    }
+
+    IEnumerator cooldowndash()
+    {
+        yield return new WaitForSeconds(dashcooldown);
+        dashMode = false;
+        candash = true;
     }
 }

@@ -8,6 +8,8 @@ TagManager:
   - Weapon
   - Weaponslot
   - Ammopickup
+  - shot
+  - basicenemy
   layers:
   - Default
   - TransparentFX
