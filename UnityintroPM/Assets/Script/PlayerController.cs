@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -72,6 +73,9 @@ public class PlayerController : MonoBehaviour
         playerCam.transform.localRotation = Quaternion.AngleAxis(camRotation.y, Vector3.left);
         transform.localRotation = Quaternion.AngleAxis(camRotation.x, Vector3.up);
 
+        if (health <= 0)
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
         if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID >= 0)
         {
             GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
@@ -86,7 +90,7 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.R))
             reloadClip();
 
-        if (Input.GetKeyDown(KeyCode.Mouse2) && candash)
+        if (Input.GetKeyDown(KeyCode.Mouse2) && candash && currentStam > 0)
         {
             dashMode = true;
             StartCoroutine("cooldowndash");
@@ -119,12 +123,15 @@ public class PlayerController : MonoBehaviour
         temp.z = horizontalMove * speed;
 
         if (sprintMode)
+        {   
             temp.x *= sprintMultiplier;
-
+            temp.z *= sprintMultiplier;
+        }
         if (dashMode)
         {
             temp.x *= dashspeed;
-            currentStam--;
+            temp.z *= dashspeed;
+            currentStam -= 2;
         }
 
         if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
@@ -132,9 +139,11 @@ public class PlayerController : MonoBehaviour
             currentStam = maxStam;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
+        if (Input.GetKeyDown(KeyCode.Space) && currentStam > 0)
+        {
             temp.y = jumpHeight;
-
+            currentStam--;
+        }
         myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
     }
 
@@ -151,7 +160,7 @@ public class PlayerController : MonoBehaviour
                 case "Weapon1":
 
                     weaponID = 0;
-                    shotVel = 10000;
+                    shotVel = 3000;
                     fireMode = 0;
                     fireRate = 0.25f;
                     currentClip = 20;
@@ -177,6 +186,12 @@ public class PlayerController : MonoBehaviour
             if (health > maxHealth)
                 health = maxHealth;
 
+            Destroy(collision.gameObject);
+        }
+
+        if (collision.gameObject.tag == "shot")
+        {
+            health--;
             Destroy(collision.gameObject);
         }
 

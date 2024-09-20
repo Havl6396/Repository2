@@ -30,7 +30,7 @@ Transform:
   m_GameObject: {fileID: 325037615786531313}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.040918946, y: 0.07999992, z: -0.028352737}
+  m_LocalPosition: {x: -0.12307119, y: 1.62, z: -0.15392327}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -153,11 +153,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   weaponSlot: {fileID: 1297498507001282538}
   maxHealth: 5
-  health: 1
+  health: 5
   healthRestore: 1
   shot: {fileID: 5071770134441556089, guid: e559c2c480d69c84bad8fb60321f0142, type: 3}
-  shotVel: 500
-  weaponID: 2
+  shotVel: 200
+  weaponID: 0
   fireMode: 0
   fireRate: 1
   currentClip: 0
@@ -171,8 +171,8 @@ MonoBehaviour:
   sprintMultiplier: 3
   sprintMode: 0
   jumpHeight: 5
-  groundDetectDistance: 3
-  dashcooldown: 0.025
+  groundDetectDistance: 1.5
+  dashcooldown: 0.05
   dashspeed: 10
   dashMode: 0
   candash: 1
@@ -182,7 +182,7 @@ MonoBehaviour:
   mouseSensitivity: 2
   Xsensitivity: 2
   Ysensitivity: 2
-  camRotationLimit: 90
+  camRotationLimit: 36
 --- !u!1 &775302001558889853
 GameObject:
   m_ObjectHideFlags: 0
