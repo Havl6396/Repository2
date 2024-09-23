@@ -17,19 +17,19 @@ public class Killbarrier : MonoBehaviour
         
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
-        if (collision.gameObject.tag == "Player")
+        if (other.gameObject.tag == "Player")
         {
 
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             
         }
 
-        if (collision.gameObject.tag == "basicenemy")
+        if (other.gameObject.tag == "basicenemy")
         {
 
-            Destroy(collision.gameObject);
+            Destroy(other.gameObject);
 
         }
     }

@@ -6,6 +6,9 @@ public class BasicEnemyController : MonoBehaviour
 {
     public int health = 3;
     public int maxhealth = 3;
+    public GameObject Healthpickup;
+    public Transform Enemy;
+    public GameObject Ammobag;
 
     // Start is called before the first frame update
     void Start()
@@ -17,7 +20,11 @@ public class BasicEnemyController : MonoBehaviour
     void Update()
     {
         if (health <= 0)
+        {
+            GameObject a = Instantiate(Ammobag, Enemy.position, Enemy.rotation);
+            GameObject l = Instantiate(Healthpickup, Enemy.position, Enemy.rotation);
             Destroy(gameObject);
+        }
     }
 
     private void OnCollisionEnter(Collision collision)

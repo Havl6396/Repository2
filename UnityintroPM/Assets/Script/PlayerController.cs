@@ -37,12 +37,13 @@ public class PlayerController : MonoBehaviour
     public bool sprintMode = false;
     public float jumpHeight = 5.0f;
     public float groundDetectDistance = 1f;
-    public float dashcooldown = .0001f;
+    public float dashduration = .0001f;
     public float dashspeed = 10.0f;
     public bool dashMode = false;
     public bool candash = true;
     public float currentStam = 3;
     public float maxStam = 3;
+    public float dashcooldown = 3;
 
     [Header("User Settings")]
     public bool sprintToggleOption = false;
@@ -94,6 +95,7 @@ public class PlayerController : MonoBehaviour
         {
             dashMode = true;
             StartCoroutine("cooldowndash");
+            candash = false;
         }
 
         Vector3 temp = myRB.velocity;
@@ -134,10 +136,13 @@ public class PlayerController : MonoBehaviour
             currentStam -= 2;
         }
 
-        if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance))
+        if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance) && dashMode == false)
         {
-            currentStam = maxStam;
+            currentStam ++;
         }
+
+        if (currentStam > maxStam)
+            currentStam = maxStam;
 
         if (Input.GetKeyDown(KeyCode.Space) && currentStam > 0)
         {
@@ -239,8 +244,9 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator cooldowndash()
     {
-        yield return new WaitForSeconds(dashcooldown);
+        yield return new WaitForSeconds(dashduration);
         dashMode = false;
+        yield return new WaitForSeconds(dashcooldown);
         candash = true;
     }
 }
