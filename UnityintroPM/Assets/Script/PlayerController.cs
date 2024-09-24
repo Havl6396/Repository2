@@ -8,6 +8,8 @@ public class PlayerController : MonoBehaviour
     Rigidbody myRB;
     Camera playerCam;
 
+    Transform cameraHolder;
+
     Vector2 camRotation;
 
     public Transform weaponSlot;
@@ -56,6 +58,8 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         myRB = GetComponent<Rigidbody>();
+        playerCam = Camera.main;
+        cameraHolder = transform.GetChild(0);
         playerCam = transform.GetChild(0).GetComponent<Camera>();
 
         camRotation = Vector2.zero;
