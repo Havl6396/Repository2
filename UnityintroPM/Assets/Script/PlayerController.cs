@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
 {
     Rigidbody myRB;
     Camera playerCam;
-
+    public gamemanager gm;
     Transform cameraHolder;
 
     Vector2 camRotation;
@@ -45,7 +45,7 @@ public class PlayerController : MonoBehaviour
     public bool candash = true;
     public float currentStam = 3;
     public float maxStam = 3;
-    public float dashcooldown = 3;
+    public float dashcooldown = 0.75f;
 
     [Header("User Settings")]
     public bool sprintToggleOption = false;
@@ -57,6 +57,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        gm = GameObject.Find("GameManager").GetComponent<gamemanager>();
         myRB = GetComponent<Rigidbody>();
         playerCam = Camera.main;
         cameraHolder = transform.GetChild(0);
@@ -70,120 +71,94 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        camRotation.x += Input.GetAxisRaw("Mouse X") * mouseSensitivity;
-        camRotation.y += Input.GetAxisRaw("Mouse Y") * mouseSensitivity;
-
-        camRotation.y = Mathf.Clamp(camRotation.y, -camRotationLimit, camRotationLimit);
-
-        playerCam.transform.localRotation = Quaternion.AngleAxis(camRotation.y, Vector3.left);
-        transform.localRotation = Quaternion.AngleAxis(camRotation.x, Vector3.up);
-
-        if (health <= 0)
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-
-        if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID >= 0)
+        if (!gm.isPaused)
         {
-            GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
-            s.GetComponent<Rigidbody>().AddForce(playerCam.transform.forward * shotVel);
-            Destroy(s, bulletLifespan);
+            camRotation.x += Input.GetAxisRaw("Mouse X") * mouseSensitivity;
+            camRotation.y += Input.GetAxisRaw("Mouse Y") * mouseSensitivity;
 
-            canFire = false;
-            currentClip--;
-            StartCoroutine("cooldownFire");
-        }
+            camRotation.y = Mathf.Clamp(camRotation.y, -camRotationLimit, camRotationLimit);
 
-        if (Input.GetKeyDown(KeyCode.R))
-            reloadClip();
+            playerCam.transform.localRotation = Quaternion.AngleAxis(camRotation.y, Vector3.left);
+            transform.localRotation = Quaternion.AngleAxis(camRotation.x, Vector3.up);
 
-        if (Input.GetKeyDown(KeyCode.Mouse2) && candash && currentStam > 0)
-        {
-            dashMode = true;
-            StartCoroutine("cooldowndash");
-            candash = false;
-        }
+            if (health <= 0)
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
-        Vector3 temp = myRB.velocity;
-
-        float verticalMove = Input.GetAxisRaw("Vertical");
-        float horizontalMove = Input.GetAxisRaw("Horizontal");
-
-        if (!sprintToggleOption)
-        {
-            if (Input.GetKey(KeyCode.LeftShift))
-                sprintMode = true;
-
-            if (Input.GetKeyUp(KeyCode.LeftShift))
-                sprintMode = false;
-        }
-
-        if (sprintToggleOption)
-        {
-            if (Input.GetKey(KeyCode.LeftShift) && verticalMove > 0)
-                sprintMode = true;
-
-            if (verticalMove <= 0)
-                sprintMode = false;
-        }
-
-        temp.x = verticalMove * speed;
-        temp.z = horizontalMove * speed;
-
-        if (sprintMode)
-        {   
-            temp.x *= sprintMultiplier;
-            temp.z *= sprintMultiplier;
-        }
-        if (dashMode)
-        {
-            temp.x *= dashspeed;
-            temp.z *= dashspeed;
-            currentStam -= 2;
-        }
-
-        if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance) && dashMode == false)
-        {
-            currentStam ++;
-        }
-
-        if (currentStam > maxStam)
-            currentStam = maxStam;
-
-        if (Input.GetKeyDown(KeyCode.Space) && currentStam > 0)
-        {
-            temp.y = jumpHeight;
-            currentStam--;
-        }
-        myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
-    }
-
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.gameObject.tag == "Weapon")
-        {
-            other.gameObject.transform.SetPositionAndRotation(weaponSlot.position, weaponSlot.rotation);
-
-            other.gameObject.transform.SetParent(weaponSlot);
-
-            switch (other.gameObject.name)
+            if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID >= 0)
             {
-                case "Weapon1":
+                GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
+                s.GetComponent<Rigidbody>().AddForce(playerCam.transform.forward * shotVel);
+                Destroy(s, bulletLifespan);
 
-                    weaponID = 0;
-                    shotVel = 3000;
-                    fireMode = 0;
-                    fireRate = 0.25f;
-                    currentClip = 20;
-                    clipSize = 20;
-                    maxAmmo = 400;
-                    currentAmmo = 200;
-                    reloadAmt = 20;
-                    bulletLifespan = 1;
-                    break;
-
-                default:
-                    break;
+                canFire = false;
+                currentClip--;
+                StartCoroutine("cooldownFire");
             }
+
+            if (Input.GetKeyDown(KeyCode.R))
+                reloadClip();
+
+            if (Input.GetKeyDown(KeyCode.Mouse2) && candash && currentStam > 0)
+            {
+                dashMode = true;
+                StartCoroutine("cooldowndash");
+                candash = false;
+            }
+
+            Vector3 temp = myRB.velocity;
+
+            float verticalMove = Input.GetAxisRaw("Vertical");
+            float horizontalMove = Input.GetAxisRaw("Horizontal");
+
+            if (!sprintToggleOption)
+            {
+                if (Input.GetKey(KeyCode.LeftShift))
+                    sprintMode = true;
+
+                if (Input.GetKeyUp(KeyCode.LeftShift))
+                    sprintMode = false;
+            }
+
+            if (sprintToggleOption)
+            {
+                if (Input.GetKey(KeyCode.LeftShift) && verticalMove > 0)
+                    sprintMode = true;
+
+                if (verticalMove <= 0)
+                    sprintMode = false;
+            }
+
+            temp.x = verticalMove * speed;
+            temp.z = horizontalMove * speed;
+
+            if (sprintMode)
+            {
+                temp.x *= sprintMultiplier;
+                temp.z *= sprintMultiplier;
+            }
+            if (dashMode)
+            {
+                temp.x *= dashspeed;
+                temp.z *= dashspeed;
+                currentStam -= 2;
+            }
+
+            if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance) && dashMode == false)
+            {
+                currentStam++;
+            }
+
+            if (currentStam > maxStam)
+                currentStam = maxStam;
+
+            if (Input.GetKeyDown(KeyCode.Space) && currentStam > 0)
+            {
+                temp.y = jumpHeight;
+                currentStam--;
+            }
+            myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
         }
+        
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -198,7 +173,7 @@ public class PlayerController : MonoBehaviour
             Destroy(collision.gameObject);
         }
 
-        if (collision.gameObject.tag == "shot")
+        if (collision.gameObject.tag == "shot2" && dashMode == false)
         {
             health--;
             Destroy(collision.gameObject);
@@ -236,6 +211,36 @@ public class PlayerController : MonoBehaviour
                 currentClip += reloadCount;
                 currentAmmo -= reloadCount;
                 return;
+            }
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Weapon")
+        {
+            other.gameObject.transform.SetPositionAndRotation(weaponSlot.position, weaponSlot.rotation);
+
+            other.gameObject.transform.SetParent(weaponSlot);
+
+            switch (other.gameObject.name)
+            {
+                case "Weapon1":
+
+                    weaponID = 0;
+                    shotVel = 3000;
+                    fireMode = 0;
+                    fireRate = 0.25f;
+                    currentClip = 20;
+                    clipSize = 20;
+                    maxAmmo = 400;
+                    currentAmmo = 200;
+                    reloadAmt = 20;
+                    bulletLifespan = 1;
+                    break;
+
+                default:
+                    break;
             }
         }
     }

@@ -11,7 +11,7 @@ public class BasicEnemyController : MonoBehaviour
     public int damageGiven = 1;
     public int projforce = 3000;
     public GameObject shot;
-    public float fireRate = .5f;
+    public float fireRate = 10f;
     public float bulletLifespan = 3;
 
     [Header("EnemyLoot")]
@@ -19,27 +19,29 @@ public class BasicEnemyController : MonoBehaviour
     public Transform Enemy;
     public GameObject Ammobag;
     public GameObject Body;
-    
 
+    [Header("EnemyDetection")]
+    public bool fireplayer = false;
+    public bool detectplayer = false;
     public PlayerController player;
     public NavMeshAgent agent;
     public Transform weaponSlot;
+    public bool shootplayer = false;
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.Find("Player").GetComponent<PlayerController>();
-        agent = GetComponent<NavMeshAgent>();
-        StartCoroutine("cooldownFire");
+        {
+            player = GameObject.Find("Player").GetComponent<PlayerController>();
+            agent = GetComponent<NavMeshAgent>();
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-   
-
-
-        agent.destination = player.transform.position;
+        if (detectplayer == true)
+            agent.destination = player.transform.position;
 
         if (health <= 0)
         {
@@ -56,16 +58,42 @@ public class BasicEnemyController : MonoBehaviour
         {
             health--;
             Destroy(collision.gameObject);
+            detectplayer = true;
         }
     }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.tag == "Player")
+        {
+            shootplayer = true;
+            detectplayer = true;
+        }
+
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.gameObject.tag == "Player" && shootplayer == true)
+        {
+
+            GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
+            s.GetComponent<Rigidbody>().AddForce(Enemy.transform.forward * projforce);
+            Destroy(s, bulletLifespan);
+            shootplayer = false;
+            StartCoroutine("cooldownFire");
+
+        }
+
+    }
+
+
 
     IEnumerator cooldownFire()
     {
         yield return new WaitForSeconds(fireRate);
-        GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
-        s.GetComponent<Rigidbody>().AddForce(Enemy.transform.forward * projforce);
-        Destroy(s, bulletLifespan);
-        StartCoroutine("cooldownFire");
+        shootplayer = true;
+
     }
 
 }

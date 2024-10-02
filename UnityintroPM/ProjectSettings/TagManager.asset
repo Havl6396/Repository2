@@ -11,6 +11,7 @@ TagManager:
   - shot
   - basicenemy
   - Falseplayer
+  - shot2
   layers:
   - Default
   - TransparentFX

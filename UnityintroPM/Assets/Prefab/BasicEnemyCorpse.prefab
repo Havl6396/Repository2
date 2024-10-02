@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 5934169748152756011}
   - component: {fileID: 5362375597291905192}
   - component: {fileID: 6874174515624295668}
+  - component: {fileID: 6405157925317465815}
   m_Layer: 0
   m_Name: BasicEnemyCorpse
   m_TagString: Untagged
@@ -137,3 +138,24 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!65 &6405157925317465815
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6437047102200641110}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1, y: 0.7975678, z: 0.28363705}
+  m_Center: {x: 0, y: 0.019519717, z: -0.1}
