@@ -12,6 +12,10 @@ TagManager:
   - basicenemy
   - Falseplayer
   - shot2
+  - shot3
+  - Weapon2
+  - shot4
+  - Exit
   layers:
   - Default
   - TransparentFX

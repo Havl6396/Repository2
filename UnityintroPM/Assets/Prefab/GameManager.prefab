@@ -48,5 +48,6 @@ MonoBehaviour:
   pauseMenu: {fileID: 0}
   playerData: {fileID: 0}
   healthBar: {fileID: 0}
+  staminaBar: {fileID: 0}
   clipCounter: {fileID: 0}
   ammoCounter: {fileID: 0}

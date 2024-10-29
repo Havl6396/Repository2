@@ -11,15 +11,22 @@ public class gamemanager : MonoBehaviour
 
     public GameObject pauseMenu;
     public PlayerController playerData;
-
+    public FalsePlayerController falseplayerData;
+    public Bossenemycontroller bossenemyData;
+    public int Enemycount;
     public Image healthBar;
+    public Image staminaBar;
     public TextMeshProUGUI clipCounter;
     public TextMeshProUGUI ammoCounter;
+
 
     // Start is called before the first frame update
     void Start()
     {
         playerData = GameObject.Find("Player").GetComponent<PlayerController>();
+        bossenemyData = GameObject.Find("Alienbosstest").GetComponent<Bossenemycontroller>();
+        Enemycount = GameObject.FindGameObjectsWithTag("basicenemy").Length;
+        //falseplayerData = GameObject.Find("Falseplayer").GetComponent<FalsePlayerController>();
     }
 
     // Update is called once per frame
@@ -28,6 +35,7 @@ public class gamemanager : MonoBehaviour
         if (SceneManager.GetActiveScene().buildIndex > 0)
         {
             healthBar.fillAmount = Mathf.Clamp((float)playerData.health / (float)playerData.maxHealth, 0, 1);
+            staminaBar.fillAmount = Mathf.Clamp((float)playerData.currentStam / (float)playerData.maxStam, 0, 1);
 
             if (playerData.weaponID < 0)
             {

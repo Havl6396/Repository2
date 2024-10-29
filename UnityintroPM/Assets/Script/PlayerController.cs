@@ -20,7 +20,9 @@ public class PlayerController : MonoBehaviour
     public int healthRestore = 1;
 
     [Header("Weapon Stats")]
+    //public AudioSource weaponSpeaker;
     public GameObject shot;
+    public GameObject shot2;
     public float shotVel = 0;
     public int weaponID = -1;
     public int fireMode = 0;
@@ -32,6 +34,7 @@ public class PlayerController : MonoBehaviour
     public float reloadAmt = 0;
     public float bulletLifespan = 0;
     public bool canFire = true;
+    public bool isbossweaponpickedup = false;
 
     [Header("Movement Settings")]
     public float speed = 10.0f;
@@ -43,8 +46,8 @@ public class PlayerController : MonoBehaviour
     public float dashspeed = 10.0f;
     public bool dashMode = false;
     public bool candash = true;
-    public float currentStam = 3;
-    public float maxStam = 3;
+    public float currentStam = 5;
+    public float maxStam = 5;
     public float dashcooldown = 0.75f;
 
     [Header("User Settings")]
@@ -84,9 +87,22 @@ public class PlayerController : MonoBehaviour
             if (health <= 0)
                 SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
 
-            if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID >= 0)
+            if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID == 1)
             {
+                //weaponSpeaker.Play();
                 GameObject s = Instantiate(shot, weaponSlot.position, weaponSlot.rotation);
+                s.GetComponent<Rigidbody>().AddForce(playerCam.transform.forward * shotVel);
+                Destroy(s, bulletLifespan);
+
+                canFire = false;
+                currentClip--;
+                StartCoroutine("cooldownFire");
+            }
+
+            if (Input.GetMouseButton(0) && canFire && currentClip > 0 && weaponID == 2)
+            {
+                //weaponSpeaker.Play();
+                GameObject s = Instantiate(shot2, weaponSlot.position, weaponSlot.rotation);
                 s.GetComponent<Rigidbody>().AddForce(playerCam.transform.forward * shotVel);
                 Destroy(s, bulletLifespan);
 
@@ -97,6 +113,32 @@ public class PlayerController : MonoBehaviour
 
             if (Input.GetKeyDown(KeyCode.R))
                 reloadClip();
+
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+            {
+                weaponID = 1;
+                shotVel = 3000;
+                fireMode = 0;
+                fireRate = 0.25f;
+                currentClip = 20;
+                clipSize = 20;
+                maxAmmo = 400;
+                reloadAmt = 20;
+                bulletLifespan = 1;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Alpha2) && isbossweaponpickedup)
+            {
+                weaponID = 2;
+                shotVel = 3000;
+                fireMode = 0;
+                fireRate = 1f;
+                currentClip = 1;
+                clipSize = 1;
+                maxAmmo = 2;
+                reloadAmt = 1;
+                bulletLifespan = 1;
+            }
 
             if (Input.GetKeyDown(KeyCode.Mouse2) && candash && currentStam > 0)
             {
@@ -140,7 +182,7 @@ public class PlayerController : MonoBehaviour
             {
                 temp.x *= dashspeed;
                 temp.z *= dashspeed;
-                currentStam -= 2;
+                currentStam -= 0.5f;
             }
 
             if (Physics.Raycast(transform.position, -transform.up, groundDetectDistance) && dashMode == false)
@@ -154,7 +196,7 @@ public class PlayerController : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space) && currentStam > 0)
             {
                 temp.y = jumpHeight;
-                currentStam--;
+                currentStam -= 2;
             }
             myRB.velocity = (temp.x * transform.forward) + (temp.z * transform.right) + (temp.y * transform.up);
         }
@@ -176,6 +218,12 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.tag == "shot2" && dashMode == false)
         {
             health--;
+            Destroy(collision.gameObject);
+        }
+
+        if (collision.gameObject.tag == "shot3" && dashMode == false)
+        {
+            health-= 3;
             Destroy(collision.gameObject);
         }
 
@@ -219,15 +267,19 @@ public class PlayerController : MonoBehaviour
     {
         if (other.gameObject.tag == "Weapon")
         {
+            //weaponSpeaker = other.gameObject.GetComponent<AudioSource>();
+
             other.gameObject.transform.SetPositionAndRotation(weaponSlot.position, weaponSlot.rotation);
 
             other.gameObject.transform.SetParent(weaponSlot);
+
+
 
             switch (other.gameObject.name)
             {
                 case "Weapon1":
 
-                    weaponID = 0;
+                    weaponID = 1;
                     shotVel = 3000;
                     fireMode = 0;
                     fireRate = 0.25f;
@@ -243,6 +295,47 @@ public class PlayerController : MonoBehaviour
                     break;
             }
         }
+
+        if (other.gameObject.tag == "Weapon2")
+        {
+                //weaponSpeaker = other.gameObject.GetComponent<AudioSource>();
+
+                other.gameObject.transform.SetPositionAndRotation(weaponSlot.position, weaponSlot.rotation);
+
+                other.gameObject.transform.SetParent(weaponSlot);
+
+                isbossweaponpickedup = true;
+                
+                if (other.gameObject.tag == "Weapon2")
+            {
+                switch (other.gameObject.name)
+                {
+                    case "Weapon2":
+
+                        weaponID = 2;
+                        shotVel = 3000;
+                        fireMode = 0;
+                        fireRate = 1f;
+                        currentClip = 1;
+                        clipSize = 1;
+                        maxAmmo = 400;
+                        currentAmmo = 200;
+                        reloadAmt = 20;
+                        bulletLifespan = 1;
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+        }
+
+        if (other.gameObject.tag == "Exit" && isbossweaponpickedup) 
+        {
+            gm.LoadLevel(SceneManager.GetActiveScene().buildIndex + 1);
+        }
+
+
     }
 
     IEnumerator cooldownFire()

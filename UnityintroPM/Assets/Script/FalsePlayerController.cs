@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class FalsePlayerController : MonoBehaviour
 {
+
+    public Transform RB;
     [Header("EnemyStats")]
-    public int health = 3;
-    public int maxhealth = 3;
+    public int health = 25;
+    public int maxhealth = 25;
     public int damageGiven = 1;
     public int projforce = 3000;
     public GameObject shot;
@@ -15,6 +17,8 @@ public class FalsePlayerController : MonoBehaviour
     public float fireRate2 = 1f;
     public float bulletLifespan = 3;
     public float bulletLifespan2 = 3;
+    public int strafe = 100;
+    
 
     [Header("EnemyLoot")]
     public GameObject Healthpickup;
@@ -30,6 +34,7 @@ public class FalsePlayerController : MonoBehaviour
     public Transform weaponSlot;
     public bool shootweap1 = false;
     public bool shootweap2 = false;
+    public Transform weaponSlot2;
 
     // Start is called before the first frame update
     void Start()
@@ -46,17 +51,21 @@ public class FalsePlayerController : MonoBehaviour
         if (detectplayer == true)
         {
             agent.destination = player.transform.position;
+            GetComponent<Rigidbody>().AddForce(Enemy.transform.right * strafe);
+           
         }
 
-        
 
         if (health <= 0)
         {
             GameObject a = Instantiate(Ammobag, Enemy.position, Enemy.rotation);
             GameObject l = Instantiate(Healthpickup, Enemy.position, Enemy.rotation);
             GameObject b = Instantiate(Body, Enemy.position, Enemy.rotation);
+            player.gm.LoadLevel(0);
             Destroy(gameObject);
         }
+
+        RB.LookAt(player.transform);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -67,7 +76,16 @@ public class FalsePlayerController : MonoBehaviour
             Destroy(collision.gameObject);
             detectplayer = true;
         }
+
+        if (collision.gameObject.tag == "shot4")
+        {
+            health-=2;
+            Destroy(collision.gameObject);
+            detectplayer = true;
+        }
     }
+
+
 
     private void OnTriggerEnter(Collider other)
     {
@@ -92,10 +110,10 @@ public class FalsePlayerController : MonoBehaviour
             shootweap2 = true;
         }
 
-        if (other.gameObject.tag == "Player" && shootweap1 == false && shootweap2 == true)
+        if (shootweap2 == true)
         {
             shootweap2 = false;
-            GameObject s2 = Instantiate(shot2, weaponSlot.position, weaponSlot.rotation);
+            GameObject s2 = Instantiate(shot2, weaponSlot2.position, weaponSlot2.rotation);
             s2.GetComponent<Rigidbody>().AddForce(Enemy.transform.forward * projforce);
             Destroy(s2, bulletLifespan2);
             StartCoroutine("cooldownFire2");

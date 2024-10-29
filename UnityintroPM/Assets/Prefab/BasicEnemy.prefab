@@ -183,7 +183,7 @@ MonoBehaviour:
   Healthpickup: {fileID: 7576621771128255261, guid: 7c9a6c7cf55112145a96b301ccd24d34, type: 3}
   Enemy: {fileID: 9202405211262558908}
   Ammobag: {fileID: 3516697487161109634, guid: 21baa4d7d76c5ee4cbde4f2425ba37e7, type: 3}
-  Body: {fileID: 6437047102200641110, guid: d1ee09325704ecb41bd6177382c68de9, type: 3}
+  Body: {fileID: 919132149155446097, guid: 824e403c8d3dd794daf48c7378e95adf, type: 3}
   fireplayer: 0
   detectplayer: 0
   player: {fileID: 0}

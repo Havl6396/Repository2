@@ -5,6 +5,8 @@ using UnityEngine.AI;
 
 public class BasicEnemyController : MonoBehaviour
 {
+    
+
     [Header("EnemyStats")]
     public int health = 3;
     public int maxhealth = 3;
@@ -34,6 +36,7 @@ public class BasicEnemyController : MonoBehaviour
         {
             player = GameObject.Find("Player").GetComponent<PlayerController>();
             agent = GetComponent<NavMeshAgent>();
+            
         }
     }
 
@@ -41,15 +44,21 @@ public class BasicEnemyController : MonoBehaviour
     void Update()
     {
         if (detectplayer == true)
+        {
             agent.destination = player.transform.position;
-
+            
+        }
         if (health <= 0)
         {
             GameObject a = Instantiate(Ammobag, Enemy.position, Enemy.rotation);
             GameObject l = Instantiate(Healthpickup, Enemy.position, Enemy.rotation);
             GameObject b = Instantiate(Body, Enemy.position, Enemy.rotation);
+            player.gm.Enemycount--;
+            
             Destroy(gameObject);
         }
+
+        
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -58,6 +67,12 @@ public class BasicEnemyController : MonoBehaviour
         {
             health--;
             Destroy(collision.gameObject);
+            detectplayer = true;
+        }
+
+        if (collision.gameObject.tag == "shot4")
+        {
+            health -= 9;
             detectplayer = true;
         }
     }
